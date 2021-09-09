@@ -1,0 +1,64 @@
+#:kivy 2.0.0
+<PongBall>:
+    size: 60, 60
+    canvas:
+        Ellipse:
+            pos: self.pos
+            size: self.size
+            source: 'salvagianni.png'
+<PongStart>
+    name: 'pongstart'
+<StartMenu>
+    name: 'startmenu'
+    Button:
+        text: "Start"
+        pos: self.pos
+        size: 5,2
+        on_release:
+            app.root.current = "pongstart"
+        background_color: (50, 255, 255, 1)
+
+<PongPaddle>:
+    size: 25, 200
+    canvas:
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<PongGame>:
+    ball: pong_ball
+    player1: player_left
+    player2: player_right
+
+    canvas:
+        Rectangle:
+            pos: self.center_x - 5, 0
+            size: 10, self.height
+
+    Label:
+        font_size: 70
+        center_x: root.width / 4
+        top: root.top - 50
+        text: str(root.player1.score)
+        color: 'lime'
+
+    Label:
+        font_size: 70
+        center_x: root.width * 3 / 4
+        top: root.top - 50
+        text: str(root.player2.score)
+        color: 'lime'
+
+    PongBall:
+        id: pong_ball
+        center: self.parent.center
+
+    PongPaddle:
+        id: player_left
+        x: root.x
+        center_y: root.center_y
+
+    PongPaddle:
+        id: player_right
+        x: root.width - self.width
+        center_y: root.center_y
