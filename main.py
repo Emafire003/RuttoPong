@@ -37,19 +37,35 @@ class PongGame(Widget):
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
     button = Button()
+    pause = False
+
 
     def menu(self):
         self.button = ObjectProperty(None)
         self.button = Button(text="Avvio", font_size=16, size=(110, 40), size_hint=(1,1), pos=self.center, background_color="cyan")
         self.button.bind(on_press=self.serve_ball)
         self.add_widget(self.button)
+        Clock.schedule_interval(self.backgroundplay, 32)
+        Clock.schedule_once(self.backgroundplay, 1)
+        self.play_sound("background.wav", 0.1)
 
-    def play_sound(self, file):
+    def play_sound(self, file, volume):
         sound = SoundLoader.load(file)
         if sound:
             print("Sound found at %s" % sound.source)
             print("Sound is %.3f seconds" % sound.length)
+            sound.volume= volume
             sound.play()
+
+    def backgroundplay(self, something):
+        sound = SoundLoader.load('background.wav')
+        if sound:
+            print("Sound found at %s" % sound.source)
+            print("Sound is %.3f seconds" % sound.length)
+            sound.volume= 0.1
+            sound.play()
+        print("restarted song")
+
     def serve_ball(self, vel=(4, 0)):
         self.remove_widget(self.button)
         self.ball.center = self.center
@@ -58,6 +74,8 @@ class PongGame(Widget):
         print("Serving Ball")
 
     def update(self, dt):
+        """"if(self.pause):
+                stuff"""
         self.ball.move()
 
         # bounce of paddles
@@ -73,12 +91,12 @@ class PongGame(Widget):
         if self.ball.x < self.x:
             self.player2.score += 1
             self.serve_ball(vel=(4, 0))
-            self.play_sound('punto.wav')
+            self.play_sound('punto.wav',1)
             print("PUNTO SX")
         if self.ball.x > self.width:
             self.player1.score += 1
             self.serve_ball(vel=(-4, 0))
-            self.play_sound('punto.wav')
+            self.play_sound('punto.wav',1)
             print("PUNTO DX")
 
     def on_touch_move(self, touch):
@@ -97,5 +115,3 @@ class PongApp(App):
 
 if __name__ == '__main__':
     PongApp().run()
-
-
