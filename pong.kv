@@ -6,17 +6,6 @@
             pos: self.pos
             size: self.size
             source: 'salvagianni.png'
-<PongStart>
-    name: 'pongstart'
-<StartMenu>
-    name: 'startmenu'
-    Button:
-        text: "Start"
-        pos: self.pos
-        size: 5,2
-        on_release:
-            app.root.current = "pongstart"
-        background_color: (50, 255, 255, 1)
 
 <PongPaddle>:
     size: 25, 200
@@ -24,6 +13,29 @@
         Rectangle:
             pos: self.pos
             size: self.size
+
+<OptionsDropDown>:
+    Label:
+        id: optext
+        text: "Opzioni"
+    Button:
+        id: music
+        text: 'Musica: On'
+        size_hint_y: None
+        height: 44
+        on_press:
+            root.select('item1')
+            self.text = 'Musica: Off'
+            game.backgroundstop()##not sure it s gonna work out
+
+    TextInput:
+        id: winning_at_input
+        hint_text:'Si vince a'
+        size_hint_y: None
+        height: 44
+        on_text:
+            root.select('item1')
+            print("ontexted")
 
 <PongGame>:
     ball: pong_ball
@@ -34,6 +46,75 @@
         Rectangle:
             pos: self.center_x - 5, 0
             size: 10, self.height
+
+    Button:
+        center_x: root.width / 2
+        center_y: root.height / 2 - 60
+        top: root.top / 2
+        text: "Avvio"
+        size: (110, 40)
+        background_color: "cyan"
+        on_press: self.parent.serve_ball()
+        on_release: self.parent.remove_widget(self)
+
+    Button:
+        id: options_button
+        center_x: root.width / 2
+        center_y: root.height - 50
+        size: 35, 35
+        background_normal: 'gear.png'
+        background_down: 'gearr.png'
+        on_press:
+            self.parent.set_pause()
+            self.parent.spawn_dropdown()
+        on_release:
+            self.parent.set_unpause()
+            #self.parent.remove_dropdown()
+             ##https://www.freepik.com/
+
+    ##Freeze Button
+    Button:
+        id: freeze_sx
+        center_x: root.width / 8
+        center_y: root.height / 12
+        size: 35, 35
+        background_normal: 'freeze.png'
+        background_down: 'freezer.png'
+        on_press:
+            self.parent.ball.freeze()
+
+    ##Freeze button
+    Button:
+        id: freeze_dx
+        center_x: root.width - root.width / 8
+        center_y: root.height - root.height / 12
+        size: 35, 35
+        background_normal: 'freeze.png'
+        background_down: 'freezer.png'
+        on_press:
+            self.parent.ball.freeze()
+
+    #Burst Button
+    Button:
+        id: burst_sx
+        center_x: root.width / 5.4
+        center_y: root.height / 12
+        size: 35, 35
+        background_normal: 'burst.png'
+        background_down: 'burstr.png'
+        on_press:
+            self.parent.ball.burst()
+
+    #Burst Button
+    Button:
+        id: burst_dx
+        center_x: root.width - root.width / 5.4
+        center_y: root.height - root.height / 12
+        size: 35, 35
+        background_normal: 'burst.png'
+        background_down: 'burstr.png'
+        on_press:
+            self.parent.ball.burst()
 
     Label:
         font_size: 70
