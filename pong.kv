@@ -14,39 +14,60 @@
             pos: self.pos
             size: self.size
 
-<OptionsDropDown>:
-    Label:
-        id: optext
-        text: "Opzioni"
-    Button:
-        id: music
-        text: 'Musica: On'
-        size_hint_y: None
-        height: 44
-        on_press:
-            root.select('item1')
-            self.text = 'Musica: Off'
-            game.backgroundstop()##not sure it s gonna work out
-
-    TextInput:
-        id: winning_at_input
-        hint_text:'Si vince a'
-        size_hint_y: None
-        height: 44
-        on_text:
-            root.select('item1')
-            print("ontexted")
-
 <PongGame>:
+    id: ponggame
     ball: pong_ball
     player1: player_left
     player2: player_right
+    pbar1: progress_sx
+    pbar2: progress_dx
 
     canvas:
         Rectangle:
             pos: self.center_x - 5, 0
             size: 10, self.height
 
+    #Need to make a winner popup
+
+    #Options Popup
+    Popup:
+        id: opt_popup
+        title: "Opzioni"
+        on_parent:
+            if self.parent == ponggame: self.parent.remove_widget(self)
+        size: 400,400
+        size_hint: None, None
+
+        ##The layout is needed here because the popup needs ONLY a widget inside it. So we cheat.
+        GridLayout:
+            cols: 2
+            rows: 6
+
+            ToggleButton:
+                id: music
+                text: 'Musica On/Off'
+                size_hint_y: None
+                height: 44
+                state: "down"
+                on_press:
+                    root.toggle_music()
+
+            Button:
+                id: close
+                text: "Indietro"
+                size_hint_y: None
+                height: 44
+                on_release:
+                    opt_popup.dismiss()
+
+            ToggleButton:
+                id: winbool
+                text: "Vincere On/Off"
+
+
+
+
+    #StartButton
     Button:
         center_x: root.width / 2
         center_y: root.height / 2 - 60
@@ -57,8 +78,9 @@
         on_press: self.parent.serve_ball()
         on_release: self.parent.remove_widget(self)
 
+    #Options button
     Button:
-        id: options_button
+        id: optbutton
         center_x: root.width / 2
         center_y: root.height - 50
         size: 35, 35
@@ -66,13 +88,11 @@
         background_down: 'gearr.png'
         on_press:
             self.parent.set_pause()
-            self.parent.spawn_dropdown()
+            opt_popup.open()
         on_release:
             self.parent.set_unpause()
-            #self.parent.remove_dropdown()
-             ##https://www.freepik.com/
 
-    ##Freeze Button
+    ##Freeze Button SX
     Button:
         id: freeze_sx
         center_x: root.width / 8
@@ -81,9 +101,19 @@
         background_normal: 'freeze.png'
         background_down: 'freezer.png'
         on_press:
-            self.parent.ball.freeze()
+            self.parent.freeze_ballSX()
 
-    ##Freeze button
+    #Freeze SX Label
+    Label:
+        id: freeze_label_sx
+        text: "6"
+        font_size: 25
+        center_x: root.width / 8
+        center_y: root.height / 12
+        color: "yellow"
+        blod: True
+
+    ##Freeze button DX
     Button:
         id: freeze_dx
         center_x: root.width - root.width / 8
@@ -92,29 +122,49 @@
         background_normal: 'freeze.png'
         background_down: 'freezer.png'
         on_press:
-            self.parent.ball.freeze()
+            self.parent.freeze_ballDX()
+        text: "5"
+        font: 'Karantina_Regular'
+        color: "purple"
+        font_size:65
+    Label:
+        text: "Hi hello 5"
+        font: 'Karantina_Regular'
 
-    #Burst Button
+    #Burst Button SX
     Button:
         id: burst_sx
         center_x: root.width / 5.4
         center_y: root.height / 12
         size: 35, 35
         background_normal: 'burst.png'
-        background_down: 'burstr.png'
+        background_down: 'burst.png'
         on_press:
-            self.parent.ball.burst()
+            self.parent.burst_ballSX()
 
-    #Burst Button
+
+    #Burst Button DX
     Button:
         id: burst_dx
+        text: "5"
         center_x: root.width - root.width / 5.4
         center_y: root.height - root.height / 12
         size: 35, 35
         background_normal: 'burst.png'
-        background_down: 'burstr.png'
+        background_down: 'burst.png'
         on_press:
-            self.parent.ball.burst()
+            self.parent.burst_ballDX()
+
+    #Burst DX Label
+    Label:
+        id: burst_label_dx
+        text: "5"
+        font_size: 25
+        center_x: root.width - root.width / 5.4
+        center_y: root.height - root.height / 12
+        color: "cyan"
+        blod: True
+
 
     Label:
         font_size: 70
@@ -143,3 +193,44 @@
         id: player_right
         x: root.width - self.width
         center_y: root.center_y
+
+    ##Punti SX
+    Label:
+        id: points_sx
+        text: "0"
+        center_x: root.width / 20
+        center_y: root.height - root.height + 35
+        color: "purple"
+        font_size: 45
+        bold: True
+
+    ##Punti DX
+    Label:
+        id: points_dx
+        text: "0"
+        center_x: root.width - root.width / 20
+        center_y: root.height - 35
+        color: "purple"
+        font: "MS Gothic"
+        font_size: 45
+        bold: True
+
+    ProgBar:
+        id: progress_sx
+    ProgBar:
+        id: progress_dx
+
+<ProgBar>:
+
+    orientation: 'horizontal'
+
+    # Creating thepg bar of specific value
+    ProgressBar:
+        value: 8
+        min: 0
+        max: 100
+        ##center_x: root.width - root.width / 5.4 + 100
+        ##center_y: root.height - root.height / 8
+        pos_hint: {'x':.5, 'y':.5}
+		size_hint_x: 3
+	    size_hint_y: 5

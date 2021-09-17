@@ -1,7 +1,7 @@
 from kivy.app import App
-from kivy.lang import Builder
+from kivy.core.text import LabelBase
+from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.dropdown import DropDown
-from kivy.uix.label import Label
 from kivy.uix.widget import Widget
 from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty
@@ -10,10 +10,13 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.uix.button import Button
+from datetime import datetime,timedelta
 
 
 class PongPaddle(Widget):
     score = NumericProperty(0)
+    # Potrebbe anzi caricarsi una barra
+    bar_value = 0
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
             vx, vy = ball.velocity
@@ -21,7 +24,7 @@ class PongPaddle(Widget):
             bounced = Vector(-1 * vx, vy)#gira la palla
             vel = bounced * 1.1 #aumenta la velocità
             ball.velocity = vel.x, vel.y + offset
-            print("COLLIDED")
+            self.bar_value = self.bar_value + 1
 
 
 class PongBall(Widget):
@@ -56,15 +59,8 @@ class PongBall(Widget):
         self.velocity_x = self.temp_vx
         self.velocity_y = self.velocity_y
 
-
-class OptionsDropDown(DropDown):
+class ProgBar(BoxLayout):
     pass
-
-class MusicButton(Button):
-
-    def change_text(self, text):
-       self.text = text
-
 
 class PongGame(Widget):
     ball = ObjectProperty(None)
@@ -72,43 +68,40 @@ class PongGame(Widget):
     player2 = ObjectProperty(None)
     pause = False
     bgm = SoundLoader.load('background.wav')
-    #dropdown = OptionsDropDown()
+    burst_cost = 5
+    freeze_cost = 6
+    music = True
+    winning = True
+    winat = 10
 
-    def spawn_dropdown(self):
-        dropdown = DropDown()
-        for index in range(10):
-            # When adding widgets, we need to specify the height manually
-            # (disabling the size_hint_y) so the dropdown can calculate
-            # the area it needs.
 
-            btn = Button(text='Value %d' % index, size_hint_y=None, height=44)
+    def burst_ballSX(self):
+        if(self.player1.bar_value >= self.burst_cost):
+            self.ball.burst()
+            self.player1.bar_value = self.player1.bar_value - self.burst_cost
+        else:
+            print("non abbastanza punti")
 
-            # for each button, attach a callback that will call the select() method
-            # on the dropdown. We'll pass the text of the button as the data of the
-            # selection.
-            btn.bind(on_release=lambda btn: dropdown.select(btn.text))
+    def burst_ballDX(self):
+        if(self.player2.bar_value >= self.burst_cost):
+            self.ball.burst()
+            self.player2.bar_value = self.player2.bar_value - self.burst_cost
+        else:
+            print("non abbastanza punti")
 
-            # then add the button inside the dropdown
-            dropdown.add_widget(btn)
+    def freeze_ballSX(self):
+        if(self.player1.bar_value >= self.freeze_cost):
+            self.ball.freeze()
+            self.player1.bar_value = self.player1.bar_value - self.freeze_cost
+        else:
+            print("non abbastanza punti")
 
-        # create a big main button
-        mainbutton = Button(text='Hello', size_hint=(None, None))
-
-        # show the dropdown menu when the main button is released
-        # note: all the bind() calls pass the instance of the caller (here, the
-        # mainbutton instance) as the first argument of the callback (here,
-        # dropdown.open.).
-        mainbutton.bind(on_release=dropdown.open)
-
-        # one last thing, listen for the selection in the dropdown list and
-        # assign the data to the button text.
-        dropdown.bind(on_select=lambda instance, x: setattr(mainbutton, 'text', x))
-        """mainbutton = self.ids.options_button
-        mainbutton.bind(on_release=self.dropdown.open)
-        self.dropdown.bind(on_select=lambda instance, x: setattr(self.ids.options_button, 'Test', x))"""
-
-    def remove_dropdown(self):
-        self.dropdown.dismiss()
+    def freeze_ballDX(self):
+        if(self.player2.bar_value >= self.freeze_cost):
+            self.ball.freeze()
+            self.player2.bar_value = self.player2.bar_value - self.freeze_cost
+        else:
+            print("non abbastanza punti")
 
     def menu(self):
         Clock.schedule_interval(self.backgroundplay, 32)
@@ -123,7 +116,8 @@ class PongGame(Widget):
             sound.play()
 
     def backgroundplay(self, something):
-
+        if(self.music == False):
+            return
         if self.bgm:
             print("Sound found at %s" % self.bgm.source)
             print("Sound is %.3f seconds" % self.bgm.length)
@@ -140,26 +134,63 @@ class PongGame(Widget):
             self.bgm.stop()
             print("stopped song")
 
+    def toggle_winning(self):
+        if (self.winning):
+            self.winning = False
+        else:
+            self.winning = True
+
+    def toggle_music(self):
+        if(self.music):
+            self.music = False
+            self.backgroundstop("hi")
+        else:
+            self.music = True
+            self.backgroundplay("hi")
+
     def set_pause(self):
         self.pause = True
-        self.backgroundstop("h")
+        self.ball
 
     def set_unpause(self):
         self.pause = False
-        self.backgroundplay("h")
+
+    def update_texts(self):
+        self.ids.points_sx.text = str(self.player1.bar_value)
+        self.ids.points_dx.text = str(self.player2.bar_value)
 
     def serve_ball(self, vel=(4, 0)):
         self.ball.center = self.center
         self.ball.velocity = vel
         print("Serving Ball")
 
+    #Main method della classe, aggiorna ogni 60esimo di secondo il gioco. fa muovere la palla ecc
     def update(self, dt):
         if(not self.pause):
+
+            if (self.winning):
+                if(self.player1.score >= self.winat):
+                    self.serve_ball(vel=(0, 0))
+                    print("YAAAAY PLAYER ONE WON")
+                    #self.play_sound("winner")
+                    #WinnerPopup
+                    #Set score to 0
+                    """On close of the winner popup start the game all over again"""
+                if (self.player2.score >= self.winat):
+                    self.serve_ball(vel=(0, 0))
+                    print("YAAAAY PLAYER TWO WON")
+                    # self.play_sound("winner")
+                    # WinnerPopup
+                    # Set score to 0
+                    """On close of the winner popup start the game all over again"""
             self.ball.move()
 
             # bounce of paddles
             self.player1.bounce_ball(self.ball)
             self.player2.bounce_ball(self.ball)
+
+            #Updating text points
+            self.update_texts()
 
             # Se la y della palla è a 0 (pavimento) o all'aletzza della classe ponggame ovvere l'altezza della finestra
             # inverti la direzione della velocità y
@@ -185,7 +216,20 @@ class PongGame(Widget):
             self.player2.center_y = touch.y
 
 class PongApp(App):
+
+    def load_fonts(self):
+        print("Registering fonts...")
+        LabelBase.register(name='Karantina_Regular',
+                           fn_regular='data/fonts/Karantina-Regular.ttf')
+        LabelBase.register(name='Karantina_Bold',
+                           fn_regular='data/fonts/Karantina-Bold.ttf')
+        LabelBase.register(name='Karantina_Light',
+                           fn_regular='data/fonts/Karantina-Light.ttf')
+        LabelBase
+        print("Registered Fonts!")
+
     def build(self):
+        self.load_fonts()
         game = PongGame()
         game.menu()
         Clock.schedule_interval(game.update, 1.0 / 60.0)
