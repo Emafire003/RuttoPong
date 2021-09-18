@@ -19,8 +19,6 @@
     ball: pong_ball
     player1: player_left
     player2: player_right
-    pbar1: progress_sx
-    pbar2: progress_dx
 
     canvas:
         Rectangle:
@@ -35,6 +33,8 @@
         title: "Opzioni"
         on_parent:
             if self.parent == ponggame: self.parent.remove_widget(self)
+        on_dismiss:
+            root.set_unpause()
         size: 400,400
         size_hint: None, None
 
@@ -43,6 +43,7 @@
             cols: 2
             rows: 6
 
+            ##Wannabe SWITCH TODO
             ToggleButton:
                 id: music
                 text: 'Musica On/Off'
@@ -64,6 +65,9 @@
                 id: winbool
                 text: "Vincere On/Off"
 
+            #SLider music TODO
+            #Max power points
+            #credits for the image freepik coso
 
 
 
@@ -72,11 +76,13 @@
         center_x: root.width / 2
         center_y: root.height / 2 - 60
         top: root.top / 2
-        text: "Avvio"
+        text: "AVVIO"
         size: (110, 40)
         background_color: "cyan"
         on_press: self.parent.serve_ball()
         on_release: self.parent.remove_widget(self)
+        ##font_name: "Rubik"
+        bold: True
 
     #Options button
     Button:
@@ -89,8 +95,6 @@
         on_press:
             self.parent.set_pause()
             opt_popup.open()
-        on_release:
-            self.parent.set_unpause()
 
     ##Freeze Button SX
     Button:
@@ -103,6 +107,19 @@
         on_press:
             self.parent.freeze_ballSX()
 
+    ##Freeze Label SX
+    LabelChanging:
+        id: label_freeze_sx
+        text: "5"
+        center_x: root.width / 8
+        center_y: root.height / 12 + 2
+        font_name: "Karantina_Regular"
+        font_size: 35
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
+
     ##Freeze button DX
     Button:
         id: freeze_dx
@@ -113,10 +130,19 @@
         background_down: 'freezer.png'
         on_press:
             self.parent.freeze_ballDX()
+
+    ##Freeze Label DX
+    LabelChanging:
+        id: label_freeze_dx
         text: "5"
-        font_name: 'Karantina_Regular'
-        color: "purple"
-        font_size:38
+        center_x: root.width - root.width / 8
+        center_y: root.height - root.height / 12 + 2
+        font_name: "Karantina_Regular"
+        font_size: 35
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
 
     #Burst Button SX
     Button:
@@ -125,39 +151,69 @@
         center_y: root.height / 12
         size: 35, 35
         background_normal: 'burst.png'
-        background_down: 'burst.png'
+        background_down: 'burstr.png'
         on_press:
             self.parent.burst_ballSX()
 
+    ##Burst Label SX
+    LabelChanging:
+        id: label_burst_sx
+        text: "5"
+        center_x: root.width / 5.4
+        center_y: root.height / 12 + 2
+        font_name: "Karantina_Regular"
+        font_size: 35
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
 
     #Burst Button DX
     Button:
         id: burst_dx
-        text: "5"
         center_x: root.width - root.width / 5.4
         center_y: root.height - root.height / 12
         size: 35, 35
         background_normal: 'burst.png'
-        background_down: 'burst.png'
+        background_down: 'burstr.png'
         on_press:
             self.parent.burst_ballDX()
 
+    ##Burst Label DX
+    LabelChanging:
+        id: label_burst_dx
+        text: "5"
+        center_x: root.width - root.width / 5.4
+        center_y: root.height - root.height / 12 + 2
+        font_name: "Karantina_Regular"
+        font_size: 35
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
 
-    Label:
+
+    LabelChanging:
         font_size: 70
         center_x: root.width / 4
         top: root.top - 50
         text: str(root.player1.score)
-        color: 'lime'
         font_name: "Karantina_Regular"
+        changing_interval: 0.12
+        color_list: ["#00e600", "#00ff00", "#1aff1a"]
+        color_number_max: 2
+        backward_repeat: True
 
-    Label:
+    LabelChanging:
         font_size: 70
         center_x: root.width * 3 / 4
         top: root.top - 50
         text: str(root.player2.score)
-        color: 'lime'
         font_name: "Karantina_Regular"
+        changing_interval: 0.12
+        color_list: ["#00e600", "#00ff00", "#1aff1a"]
+        color_number_max: 2
+        backward_repeat: True
 
     PongBall:
         id: pong_ball
@@ -202,22 +258,21 @@
         color_number_max: 4
         backward_repeat: True
 
-    ProgBar:
-        id: progress_sx
-    ProgBar:
-        id: progress_dx
-
-<ProgBar>:
-
-    orientation: 'horizontal'
-
-    # Creating thepg bar of specific value
     ProgressBar:
-        value: 8
+        id: prog_sx
+        value: 0
         min: 0
-        max: 100
-        ##center_x: root.width - root.width / 5.4 + 100
-        ##center_y: root.height - root.height / 8
-        pos_hint: {'x':.5, 'y':.5}
-		size_hint_x: 3
-	    size_hint_y: 5
+        max: 10
+        center_x: 120
+        center_y: 20
+        max_power_points: 10
+
+    ProgressBar:
+        id: prog_dx
+        value: 0
+        min: 0
+        max: 10
+        center_x: root.width - 120
+        center_y: root.height - 20
+        max_power_points: 10
+

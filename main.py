@@ -11,11 +11,13 @@ from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 
 
 class PongPaddle(Widget):
     score = NumericProperty(0)
     # Potrebbe anzi caricarsi una barra
+    max_power_points = 10
     bar_value = 0
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
@@ -24,7 +26,10 @@ class PongPaddle(Widget):
             bounced = Vector(-1 * vx, vy)#gira la palla
             vel = bounced * 1.1 #aumenta la velocità
             ball.velocity = vel.x, vel.y + offset
-            self.bar_value = self.bar_value + 1
+            if(self.bar_value < self.max_power_points):
+                self.bar_value = self.bar_value + 1
+            #Easy fix for the super launchery thing
+            #Make the ball invulnerable to vel changes for a short period of time
 
 
 class PongBall(Widget):
@@ -33,9 +38,20 @@ class PongBall(Widget):
     velocity = ReferenceListProperty(velocity_x, velocity_y)
     temp_vx = NumericProperty(0)
     temp_vy = NumericProperty(0)
-
+    temp_vel = (0,0)
     def move(self):
         self.pos = Vector(*self.velocity) + self.pos
+
+    def pause(self):
+        self.temp_vx = self.velocity_x
+        self.temp_vy = self.velocity_y
+        self.velocity_x = 0
+        self.velocity_y = 0
+        self.velocity = (0,0)
+
+    def unpause(self):
+        self.velocity_x = self.temp_vx
+        self.velocity_y = self.velocity_y
 
     def burst(self):
         self.velocity_x = self.velocity_x*2
@@ -58,9 +74,6 @@ class PongBall(Widget):
     def unfreeze(self, stuff):
         self.velocity_x = self.temp_vx
         self.velocity_y = self.velocity_y
-
-class ProgBar(BoxLayout):
-    pass
 
 class LabelChanging(Label):
     color_number = 0
@@ -120,6 +133,7 @@ class PongGame(Widget):
     winning = True
     winat = 10
 
+    #Metter il max power points nelle opzioni TODO
     def menu(self):
         Clock.schedule_interval(self.backgroundplay, 32)
         Clock.schedule_once(self.backgroundplay, 1)
@@ -195,14 +209,22 @@ class PongGame(Widget):
 
     def set_pause(self):
         self.pause = True
-        self.ball
+        self.ball.pause()
+        print("set pausing")
 
     def set_unpause(self):
         self.pause = False
+        self.ball.unpause()
+        print("set unpausing")
 
+    #Updates the progress bar and the texts
     def update_texts(self):
-        self.ids.points_sx.text = str(self.player1.bar_value)
-        self.ids.points_dx.text = str(self.player2.bar_value)
+        if(self.player1.bar_value <= self.player1.max_power_points):
+            self.ids.points_sx.text = str(self.player1.bar_value)
+            self.ids.prog_sx.value = self.player1.bar_value
+        if(self.player2.bar_value <= self.player2.max_power_points):
+            self.ids.points_dx.text = str(self.player2.bar_value)
+            self.ids.prog_dx.value = self.player2.bar_value
 
     def serve_ball(self, vel=(4, 0)):
         self.ball.center = self.center
@@ -268,9 +290,13 @@ class PongApp(App):
     def load_fonts(self):
         print("Registering fonts...")
         LabelBase.register(name='Karantina_Regular',
-                           fn_regular='data/fonts/Karantina-Regular.ttf', fn_bold='data/fonts/Karantina-Bold.ttf')
-        """LabelBase.register(name='Karantina_Bold',
-                           fn_regular='data/fonts/Karantina-Bold.ttf')"""
+                           fn_regular='data/fonts/Karantina-Regular.ttf',
+                           fn_bold='data/fonts/Karantina-Bold.ttf')
+        LabelBase.register(name='Rubik',
+                           fn_regular='data/fonts/Rubik-Regular.ttf',
+                           fn_bold='data/fonts/Rubik-Bold.ttf',
+                           fn_italic='data/fonts/Rubik-Italic.ttf',
+                           fn_bolditalic='data/fonts/Rubik-BoldItalic.ttf')
         LabelBase.register(name='Karantina_Light',
                            fn_regular='data/fonts/Karantina-Light.ttf')
         print("Registered Fonts!")
