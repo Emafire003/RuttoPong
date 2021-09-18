@@ -103,16 +103,6 @@
         on_press:
             self.parent.freeze_ballSX()
 
-    #Freeze SX Label
-    Label:
-        id: freeze_label_sx
-        text: "6"
-        font_size: 25
-        center_x: root.width / 8
-        center_y: root.height / 12
-        color: "yellow"
-        blod: True
-
     ##Freeze button DX
     Button:
         id: freeze_dx
@@ -124,12 +114,9 @@
         on_press:
             self.parent.freeze_ballDX()
         text: "5"
-        font: 'Karantina_Regular'
+        font_name: 'Karantina_Regular'
         color: "purple"
-        font_size:65
-    Label:
-        text: "Hi hello 5"
-        font: 'Karantina_Regular'
+        font_size:38
 
     #Burst Button SX
     Button:
@@ -155,16 +142,6 @@
         on_press:
             self.parent.burst_ballDX()
 
-    #Burst DX Label
-    Label:
-        id: burst_label_dx
-        text: "5"
-        font_size: 25
-        center_x: root.width - root.width / 5.4
-        center_y: root.height - root.height / 12
-        color: "cyan"
-        blod: True
-
 
     Label:
         font_size: 70
@@ -172,6 +149,7 @@
         top: root.top - 50
         text: str(root.player1.score)
         color: 'lime'
+        font_name: "Karantina_Regular"
 
     Label:
         font_size: 70
@@ -179,6 +157,7 @@
         top: root.top - 50
         text: str(root.player2.score)
         color: 'lime'
+        font_name: "Karantina_Regular"
 
     PongBall:
         id: pong_ball
@@ -195,25 +174,33 @@
         center_y: root.center_y
 
     ##Punti SX
-    Label:
+    LabelChanging:
         id: points_sx
         text: "0"
         center_x: root.width / 20
         center_y: root.height - root.height + 35
-        color: "purple"
+        font_name: "Karantina_Regular"
         font_size: 45
         bold: True
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
 
     ##Punti DX
-    Label:
+    LabelChanging:
         id: points_dx
         text: "0"
         center_x: root.width - root.width / 20
         center_y: root.height - 35
         color: "purple"
-        font: "MS Gothic"
+        font_name: "Karantina_Regular"
         font_size: 45
         bold: True
+        changing_interval: 0.12
+        color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
+        color_number_max: 4
+        backward_repeat: True
 
     ProgBar:
         id: progress_sx

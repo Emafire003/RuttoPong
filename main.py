@@ -10,7 +10,7 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.uix.button import Button
-from datetime import datetime,timedelta
+from kivy.uix.label import Label
 
 
 class PongPaddle(Widget):
@@ -62,6 +62,52 @@ class PongBall(Widget):
 class ProgBar(BoxLayout):
     pass
 
+class LabelChanging(Label):
+    color_number = 0
+    color_number_max = 0
+    color_list = ["#6a0a83"]
+    backward_repeat: True #True, rifà la lista all'indietro
+    changing_interval = 0.16
+    direction: True #True 0 to max, false max to 0
+    
+    def __init__(self, **kwargs):
+        super(LabelChanging, self).__init__()
+        self.backward_repeat = True
+        self.direction = True
+        self.color_list = ["#6a0a83"]
+        self.color_number = 0
+        self.color_number_max = 0
+        self.changing_interval = 0.16
+        Clock.schedule_once(self.start_changing, 0.1)
+
+    def set_color_list(self, list):
+        self.color_number_max = len(list)
+        self.color_list = list
+
+    #Changes the color of the text
+    def change_color(self, stuff):
+
+        #Checks if the repeat is true, and then if the direction is up or down
+        if (self.backward_repeat and not self.direction):
+            self.color_number = self.color_number - 1
+            if(self.color_number < 0):
+                self.direction = True
+                self.color_number = 0
+        else:
+            self.color_number = self.color_number + 1
+
+        #Checks if the number is more than max and if it is repeat mode sets to max and direction false, if not sets to 0
+        if(self.color_number > self.color_number_max):
+            if(self.backward_repeat):
+                self.direction = False
+                self.color_number = self.color_number_max
+            else:
+                self.color_number = 0
+        self.color = self.color_list[self.color_number]
+
+    def start_changing(self, stuff):
+        Clock.schedule_interval(self.change_color, self.changing_interval)
+
 class PongGame(Widget):
     ball = ObjectProperty(None)
     player1 = ObjectProperty(None)
@@ -74,6 +120,9 @@ class PongGame(Widget):
     winning = True
     winat = 10
 
+    def menu(self):
+        Clock.schedule_interval(self.backgroundplay, 32)
+        Clock.schedule_once(self.backgroundplay, 1)
 
     def burst_ballSX(self):
         if(self.player1.bar_value >= self.burst_cost):
@@ -102,10 +151,6 @@ class PongGame(Widget):
             self.player2.bar_value = self.player2.bar_value - self.freeze_cost
         else:
             print("non abbastanza punti")
-
-    def menu(self):
-        Clock.schedule_interval(self.backgroundplay, 32)
-        Clock.schedule_once(self.backgroundplay, 1)
 
     def play_sound(self, file, volume):
         sound = SoundLoader.load(file)
@@ -215,17 +260,19 @@ class PongGame(Widget):
         if touch.x > self.width - self.width / 3:
             self.player2.center_y = touch.y
 
+
+
+
 class PongApp(App):
 
     def load_fonts(self):
         print("Registering fonts...")
         LabelBase.register(name='Karantina_Regular',
-                           fn_regular='data/fonts/Karantina-Regular.ttf')
-        LabelBase.register(name='Karantina_Bold',
-                           fn_regular='data/fonts/Karantina-Bold.ttf')
+                           fn_regular='data/fonts/Karantina-Regular.ttf', fn_bold='data/fonts/Karantina-Bold.ttf')
+        """LabelBase.register(name='Karantina_Bold',
+                           fn_regular='data/fonts/Karantina-Bold.ttf')"""
         LabelBase.register(name='Karantina_Light',
                            fn_regular='data/fonts/Karantina-Light.ttf')
-        LabelBase
         print("Registered Fonts!")
 
     def build(self):
