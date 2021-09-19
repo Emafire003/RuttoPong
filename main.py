@@ -1,7 +1,5 @@
 from kivy.app import App
 from kivy.core.text import LabelBase
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.dropdown import DropDown
 from kivy.uix.widget import Widget
 from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty
@@ -9,10 +7,11 @@ from kivy.properties import (
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
-from kivy.uix.button import Button
 from kivy.uix.label import Label
-from kivy.uix.popup import Popup
+from kivy.uix.switch import Switch
 
+#TODO ostacoli bottone (tipo costo 7/8)
+#TODO On a win,usare delle gif di coriandoli o robe del genere e fare un'animation con direzione e size randomizzate
 
 class PongPaddle(Widget):
     score = NumericProperty(0)
@@ -121,17 +120,21 @@ class LabelChanging(Label):
     def start_changing(self, stuff):
         Clock.schedule_interval(self.change_color, self.changing_interval)
 
+
+
 class PongGame(Widget):
     ball = ObjectProperty(None)
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
     pause = False
-    bgm = SoundLoader.load('background.wav')
+    bgm = SoundLoader.load('data/sounds/background.wav')
     burst_cost = 5
     freeze_cost = 6
     music = True
     winning = True
     winat = 10
+    winner = "0"
+    seffects = True
 
     #Metter il max power points nelle opzioni TODO
     def menu(self):
@@ -141,6 +144,7 @@ class PongGame(Widget):
     def burst_ballSX(self):
         if(self.player1.bar_value >= self.burst_cost):
             self.ball.burst()
+            self.play_sound('data/sounds/burst.wav', 1)
             self.player1.bar_value = self.player1.bar_value - self.burst_cost
         else:
             print("non abbastanza punti")
@@ -168,7 +172,7 @@ class PongGame(Widget):
 
     def play_sound(self, file, volume):
         sound = SoundLoader.load(file)
-        if sound:
+        if sound and self.seffects:
             print("Sound found at %s" % sound.source)
             print("Sound is %.3f seconds" % sound.length)
             sound.volume= volume
@@ -198,6 +202,12 @@ class PongGame(Widget):
             self.winning = False
         else:
             self.winning = True
+
+    def toggle_seffects(self):
+        if (self.seffects):
+            self.seffects = False
+        else:
+            self.seffects = True
 
     def toggle_music(self):
         if(self.music):
@@ -239,17 +249,32 @@ class PongGame(Widget):
                 if(self.player1.score >= self.winat):
                     self.serve_ball(vel=(0, 0))
                     print("YAAAAY PLAYER ONE WON")
-                    #self.play_sound("winner")
-                    #WinnerPopup
-                    #Set score to 0
-                    """On close of the winner popup start the game all over again"""
+                    self.set_pause()
+
+                    self.play_sound('data/sounds/winner.wav', 1)
+                    self.winner = "1"
+                    self.ids.winner_label.text = "Vince il giocatore 1!!!"
+                    self.ids.winner_popup.open()
+
+                    #Resetting the game
+                    self.player1.score = 0
+                    self.player2.score = 0
+                    self.add_widget(self.ids.avvio)
                 if (self.player2.score >= self.winat):
+                    #Stopping bal
                     self.serve_ball(vel=(0, 0))
                     print("YAAAAY PLAYER TWO WON")
-                    # self.play_sound("winner")
-                    # WinnerPopup
-                    # Set score to 0
-                    """On close of the winner popup start the game all over again"""
+                    self.set_pause()
+                    self.winner = "2"
+                    self.ids.winner_label.text = "Vince il giocatore 2!!!"
+                    self.ids.winner_popup.open()
+                    self.play_sound('data/sounds/winner.wav', 1)
+
+                    #Resetting the game
+                    self.player1.score = 0
+                    self.player2.score = 0
+                    self.add_widget(self.ids.avvio)
+
             self.ball.move()
 
             # bounce of paddles
@@ -263,18 +288,17 @@ class PongGame(Widget):
             # inverti la direzione della velocità y
             if (self.ball.y < self.y) or (self.ball.top > self.top):
                 self.ball.velocity_y *= -1
+                self.play_sound('data/sounds/birp.wav', 1)
 
             # went of to a side to score point?
             if self.ball.x < self.x:
                 self.player2.score += 1
                 self.serve_ball(vel=(4, 0))
-                self.play_sound('punto.wav', 1)
-                print("PUNTO SX")
+                self.play_sound('data/sounds/punto.wav', 1)
             if self.ball.x > self.width:
                 self.player1.score += 1
                 self.serve_ball(vel=(-4, 0))
-                self.play_sound('punto.wav', 1)
-                print("PUNTO DX")
+                self.play_sound('data/sounds/punto.wav', 1)
 
     def on_touch_move(self, touch):
         if touch.x < self.width / 3:
@@ -299,6 +323,15 @@ class PongApp(App):
                            fn_bolditalic='data/fonts/Rubik-BoldItalic.ttf')
         LabelBase.register(name='Karantina_Light',
                            fn_regular='data/fonts/Karantina-Light.ttf')
+        LabelBase.register(name='Oswald',
+                           fn_regular='data/fonts/Oswald-Regular.ttf',
+                           fn_bold='data/fonts/Oswald-Bold.ttf')
+        LabelBase.register(name='Oswald-Medium',
+                           fn_regular='data/fonts/Oswald-Medium.ttf',
+                           fn_bold='data/fonts/Oswald-SemiBold.ttf')
+        LabelBase.register(name='Oswald-Light',
+                           fn_regular='data/fonts/Oswald-ExtraLight.ttf',
+                           fn_bold='data/fonts/Oswald-Light.ttf')
         print("Registered Fonts!")
 
     def build(self):

@@ -25,7 +25,27 @@
             pos: self.center_x - 5, 0
             size: 10, self.height
 
-    #Need to make a winner popup
+    #Winner Popup 1
+    Popup:
+        id: winner_popup
+        title: "Vittoria!"
+        on_parent:
+            if self.parent == ponggame: self.parent.remove_widget(self)
+        size: 400,300
+        size_hint: None, None
+
+        LabelChanging:
+            id: winner_label
+            text: "Vince il giocatore 0!!!"
+            center_x: self.width / 2
+            center_y: self.height / 2
+            font_name: "Oswald"
+            font_size: 30
+            bold: True
+            changing_interval: 0.12
+            color_list: ["#ffc600","#fed801", "#fedb16", "#fedc1b","#ffff00","#fedd25","#fee034"]
+            color_number_max: 6
+            backward_repeat: True
 
     #Options Popup
     Popup:
@@ -53,6 +73,30 @@
                 on_press:
                     root.toggle_music()
 
+            ToggleButton:
+                id: sound_effects
+                text: 'Suoni On/Off'
+                size_hint_y: None
+                height: 44
+                state: "down"
+                on_press:
+                    root.toggle_seffects()
+
+            ToggleButton:
+                id: winbool
+                text: "Vincere On/Off"
+                state: "down"
+                on_press:
+                    root.toggle_winning()
+                size_hint_y: None
+                height: 44
+            TextInput:
+                id: winat_input
+                text: "Si vince a:"
+                size_hint_y: None
+                height: 44
+                multiline: False
+
             Button:
                 id: close
                 text: "Indietro"
@@ -60,10 +104,6 @@
                 height: 44
                 on_release:
                     opt_popup.dismiss()
-
-            ToggleButton:
-                id: winbool
-                text: "Vincere On/Off"
 
             #SLider music TODO
             #Max power points
@@ -73,15 +113,17 @@
 
     #StartButton
     Button:
+        id: avvio
         center_x: root.width / 2
         center_y: root.height / 2 - 60
         top: root.top / 2
         text: "AVVIO"
         size: (110, 40)
         background_color: "cyan"
-        on_press: self.parent.serve_ball()
+        on_press:
+            self.parent.set_unpause()
+            self.parent.serve_ball()
         on_release: self.parent.remove_widget(self)
-        ##font_name: "Rubik"
         bold: True
 
     #Options button
@@ -110,7 +152,7 @@
     ##Freeze Label SX
     LabelChanging:
         id: label_freeze_sx
-        text: "5"
+        text: "6"
         center_x: root.width / 8
         center_y: root.height / 12 + 2
         font_name: "Karantina_Regular"
@@ -134,7 +176,7 @@
     ##Freeze Label DX
     LabelChanging:
         id: label_freeze_dx
-        text: "5"
+        text: "6"
         center_x: root.width - root.width / 8
         center_y: root.height - root.height / 12 + 2
         font_name: "Karantina_Regular"
