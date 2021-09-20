@@ -5,7 +5,7 @@
         Ellipse:
             pos: self.pos
             size: self.size
-            source: 'salvagianni.png'
+            source: root.pathfinder.get_path() + '/data/imgs/salvagianni.png'
 
 <PongPaddle>:
     size: 25, 200
@@ -132,8 +132,8 @@
         center_x: root.width / 2
         center_y: root.height - 50
         size: 35, 35
-        background_normal: 'gear.png'
-        background_down: 'gearr.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/gear.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/gearr.png'
         on_press:
             self.parent.set_pause()
             opt_popup.open()
@@ -144,8 +144,8 @@
         center_x: root.width / 8
         center_y: root.height / 12
         size: 35, 35
-        background_normal: 'freeze.png'
-        background_down: 'freezer.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/freeze.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/freezer.png'
         on_press:
             self.parent.freeze_ballSX()
 
@@ -168,8 +168,8 @@
         center_x: root.width - root.width / 8
         center_y: root.height - root.height / 12
         size: 35, 35
-        background_normal: 'freeze.png'
-        background_down: 'freezer.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/freeze.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/freezer.png'
         on_press:
             self.parent.freeze_ballDX()
 
@@ -192,8 +192,8 @@
         center_x: root.width / 5.4
         center_y: root.height / 12
         size: 35, 35
-        background_normal: 'burst.png'
-        background_down: 'burstr.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/burst.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/burstr.png'
         on_press:
             self.parent.burst_ballSX()
 
@@ -216,8 +216,8 @@
         center_x: root.width - root.width / 5.4
         center_y: root.height - root.height / 12
         size: 35, 35
-        background_normal: 'burst.png'
-        background_down: 'burstr.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/burst.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/burstr.png'
         on_press:
             self.parent.burst_ballDX()
 

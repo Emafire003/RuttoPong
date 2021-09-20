@@ -1,3 +1,5 @@
+import sys
+
 from kivy.app import App
 from kivy.core.text import LabelBase
 from kivy.uix.widget import Widget
@@ -8,16 +10,42 @@ from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.uix.label import Label
+import os
+from kivy.utils import platform
 from kivy.uix.switch import Switch
 
 #TODO ostacoli bottone (tipo costo 7/8)
 #TODO On a win,usare delle gif di coriandoli o robe del genere e fare un'animation con direzione e size randomizzate
+
+
+class PathFinder():
+
+    app_folder = "."
+
+    def get_path(self):
+        try:
+            if platform == "android":
+                from android.permissions import request_permissions, Permission
+                request_permissions([Permission.READ_EXTERNAL_STORAGE, Permission.WRITE_EXTERNAL_STORAGE])
+                self.app_folder = os.path.dirname(os.path.abspath(__file__))
+            elif platform == "win":
+                try:
+                    # PyInstaller creates a temp folder and stores path in _MEIPASS
+                    self.app_folder = sys._MEIPASS
+                except Exception:
+                    self.app_folder = os.path.abspath(".")
+        except:
+            self.app_folder = os.path.abspath(".")
+        print(self.app_folder)
+        return str(self.app_folder)
 
 class PongPaddle(Widget):
     score = NumericProperty(0)
     # Potrebbe anzi caricarsi una barra
     max_power_points = 10
     bar_value = 0
+    pathfinder = PathFinder()
+
     def bounce_ball(self, ball):
         if self.collide_widget(ball):
             vx, vy = ball.velocity
@@ -32,6 +60,7 @@ class PongPaddle(Widget):
 
 
 class PongBall(Widget):
+    pathfinder = PathFinder()
     velocity_x = NumericProperty(0)
     velocity_y = NumericProperty(0)
     velocity = ReferenceListProperty(velocity_x, velocity_y)
@@ -127,7 +156,8 @@ class PongGame(Widget):
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
     pause = False
-    bgm = SoundLoader.load('data/sounds/background.wav')
+    pathfinder = PathFinder()
+    bgm = SoundLoader.load(pathfinder.get_path() + '/data/sounds/background.wav')
     burst_cost = 5
     freeze_cost = 6
     music = True
@@ -135,6 +165,7 @@ class PongGame(Widget):
     winat = 10
     winner = "0"
     seffects = True
+
 
     #Metter il max power points nelle opzioni TODO
     def menu(self):
@@ -144,7 +175,7 @@ class PongGame(Widget):
     def burst_ballSX(self):
         if(self.player1.bar_value >= self.burst_cost):
             self.ball.burst()
-            self.play_sound('data/sounds/burst.wav', 1)
+            self.play_sound(self.pathfinder.get_path() + '/data/sounds/burst.wav', 1)
             self.player1.bar_value = self.player1.bar_value - self.burst_cost
         else:
             print("non abbastanza punti")
@@ -171,7 +202,7 @@ class PongGame(Widget):
             print("non abbastanza punti")
 
     def play_sound(self, file, volume):
-        sound = SoundLoader.load(file)
+        sound = SoundLoader.load(self.pathfinder.get_path() + file)
         if sound and self.seffects:
             print("Sound found at %s" % sound.source)
             print("Sound is %.3f seconds" % sound.length)
@@ -251,7 +282,7 @@ class PongGame(Widget):
                     print("YAAAAY PLAYER ONE WON")
                     self.set_pause()
 
-                    self.play_sound('data/sounds/winner.wav', 1)
+                    self.play_sound('/data/sounds/winner.wav', 1)
                     self.winner = "1"
                     self.ids.winner_label.text = "Vince il giocatore 1!!!"
                     self.ids.winner_popup.open()
@@ -268,7 +299,7 @@ class PongGame(Widget):
                     self.winner = "2"
                     self.ids.winner_label.text = "Vince il giocatore 2!!!"
                     self.ids.winner_popup.open()
-                    self.play_sound('data/sounds/winner.wav', 1)
+                    self.play_sound('/data/sounds/winner.wav', 1)
 
                     #Resetting the game
                     self.player1.score = 0
@@ -288,17 +319,18 @@ class PongGame(Widget):
             # inverti la direzione della velocità y
             if (self.ball.y < self.y) or (self.ball.top > self.top):
                 self.ball.velocity_y *= -1
-                self.play_sound('data/sounds/birp.wav', 1)
+                self.play_sound('/data/sounds/rup.wav', 0.2)
 
             # went of to a side to score point?
             if self.ball.x < self.x:
                 self.player2.score += 1
                 self.serve_ball(vel=(4, 0))
-                self.play_sound('data/sounds/punto.wav', 1)
+                print(self.pathfinder.get_path())
+                self.play_sound('/data/sounds/punto.wav', 1)
             if self.ball.x > self.width:
                 self.player1.score += 1
                 self.serve_ball(vel=(-4, 0))
-                self.play_sound('data/sounds/punto.wav', 1)
+                self.play_sound('/data/sounds/punto.wav', 1)
 
     def on_touch_move(self, touch):
         if touch.x < self.width / 3:
@@ -310,28 +342,28 @@ class PongGame(Widget):
 
 
 class PongApp(App):
-
+    pathfinder = PathFinder()
     def load_fonts(self):
         print("Registering fonts...")
         LabelBase.register(name='Karantina_Regular',
-                           fn_regular='data/fonts/Karantina-Regular.ttf',
-                           fn_bold='data/fonts/Karantina-Bold.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Karantina-Regular.ttf',
+                           fn_bold=self.pathfinder.get_path() + '/data/fonts/Karantina-Bold.ttf')
         LabelBase.register(name='Rubik',
-                           fn_regular='data/fonts/Rubik-Regular.ttf',
-                           fn_bold='data/fonts/Rubik-Bold.ttf',
-                           fn_italic='data/fonts/Rubik-Italic.ttf',
-                           fn_bolditalic='data/fonts/Rubik-BoldItalic.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Rubik-Regular.ttf',
+                           fn_bold=self.pathfinder.get_path() + '/data/fonts/Rubik-Bold.ttf',
+                           fn_italic=self.pathfinder.get_path() + '/data/fonts/Rubik-Italic.ttf',
+                           fn_bolditalic=self.pathfinder.get_path() + '/data/fonts/Rubik-BoldItalic.ttf')
         LabelBase.register(name='Karantina_Light',
-                           fn_regular='data/fonts/Karantina-Light.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Karantina-Light.ttf')
         LabelBase.register(name='Oswald',
-                           fn_regular='data/fonts/Oswald-Regular.ttf',
-                           fn_bold='data/fonts/Oswald-Bold.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Oswald-Regular.ttf',
+                           fn_bold=self.pathfinder.get_path() + '/data/fonts/Oswald-Bold.ttf')
         LabelBase.register(name='Oswald-Medium',
-                           fn_regular='data/fonts/Oswald-Medium.ttf',
-                           fn_bold='data/fonts/Oswald-SemiBold.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Oswald-Medium.ttf',
+                           fn_bold=self.pathfinder.get_path() + '/data/fonts/Oswald-SemiBold.ttf')
         LabelBase.register(name='Oswald-Light',
-                           fn_regular='data/fonts/Oswald-ExtraLight.ttf',
-                           fn_bold='data/fonts/Oswald-Light.ttf')
+                           fn_regular=self.pathfinder.get_path() + '/data/fonts/Oswald-ExtraLight.ttf',
+                           fn_bold=self.pathfinder.get_path() + '/data/fonts/Oswald-Light.ttf')
         print("Registered Fonts!")
 
     def build(self):
