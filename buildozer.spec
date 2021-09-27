@@ -28,7 +28,7 @@ source.include_exts = py,png,jpg,kv,atlas,wav,ttf
 #source.exclude_patterns = license,images/*/*.jpg
 
 # (str) Application versioning (method 1)
-version = 0.3.2
+version = 0.9
 
 
 # (str) Application versioning (method 2)

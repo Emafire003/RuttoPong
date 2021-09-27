@@ -5,7 +5,7 @@
         Ellipse:
             pos: self.pos
             size: self.size
-            source: root.pathfinder.get_path() + '/data/imgs/salvagianni.png'
+            source: self.source
 
 <PongPaddle>:
     size: 25, 200
@@ -19,8 +19,11 @@
     ball: pong_ball
     player1: player_left
     player2: player_right
-
+    source: self.pathfinder.get_path() + "/data/imgs/black.png"
     canvas:
+        Rectangle:
+            size: self.width, self.height
+            source: self.source
         Rectangle:
             pos: self.center_x - 5, 0
             size: 10, self.height
@@ -56,12 +59,12 @@
         on_dismiss:
             root.set_unpause()
         size: 400,400
-        size_hint: .55, .65
+        size_hint: .60, .75
 
         ##The layout is needed here because the popup needs ONLY a widget inside it. So we cheat.
         GridLayout:
             cols: 2
-            rows: 12
+            rows: 14
 
             ToggleButton:
                 id: music
@@ -90,13 +93,20 @@
                 size_hint_y: None
                 height: 44
 
-            Button:
-                id: credits_button
-                text: "Crediti"
+            Spinner:
+                id: music_spinner
                 size_hint_y: None
                 height: 44
-                on_release:
-                    credits_popup.open()
+                text: 'Scegli Musica'
+                values: 'HappyHappy', 'Burpish', 'Burpish_nopiano'
+                on_text:
+                    print("hi")
+                    root.bgm = self.text
+                    root.sounds["bgm"] = root.bgms[root.bgm]
+                    root.backgroundstop("hi")
+                    root.change_clock()
+                    root.backgroundplay("hi1")
+
 
             Label:
                 id: wininput_ask
@@ -147,6 +157,42 @@
                 orientation: 'horizontal'
                 value: 1*100
 
+
+            Spinner:
+                id: ball_spinner
+                size_hint_y: None
+                height: 44
+                text: 'Icona Palla'
+                values: "Salvagianni", "Ingranaggio", "Bursted", "Freezed", "Tondino", "Luna"
+                on_text:
+                    root.ball.source = root.ball_icons[self.text]
+
+            Spinner:
+                id: background_spinner
+                size_hint_y: None
+                height: 44
+                text: 'Sfondo'
+                values: "Default", "Galassia", "Electric", "PacMan", "Monti", "Apli", "Prato", "Prato Alpino", "Foresta", "Lago", "Gradiente"
+                on_text:
+                    root.source = root.backgrounds[self.text]
+
+            Button:
+                id: github_button
+                text: "Codice Sorgente"
+                size_hint_y: None
+                height: 44
+                on_release:
+                    import webbrowser
+                    webbrowser.open('https://github.com/Emafire003/RuttoPong')
+
+            Button:
+                id: credits_button
+                text: "Crediti"
+                size_hint_y: None
+                height: 44
+                on_release:
+                    credits_popup.open()
+
             Button:
                 id: save_update
                 text: "Salva e Aggiorna"
@@ -180,7 +226,13 @@
             cols: 1
             rows: 6
             Label:
-                text: "Immagine bottone opzioni: www.freepik.com"
+                text: "Immagine bottone opzioni: https://www.freepik.com"
+            Label:
+                text: "Immagini sfondo: @Emafire003, https://designfup.com/, http://wallpapers4screen.com/, "
+                font_size: 10
+            Label:
+                text: "https://getwallpapers.com/collection/electronic-wallpaper-background, https://www.getsims.com"
+                font_size: 9
             Label:
                 text: "SoundTracks: Discord @Franzle#0347"
             Label:
@@ -226,6 +278,7 @@
         on_press:
             self.parent.set_unpause()
             self.parent.serve_ball()
+            self.parent.play_sound(self.parent.sounds["gl"], self.parent.sound_volume)
         on_release: self.parent.remove_widget(self)
         bold: True
 

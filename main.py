@@ -1,21 +1,22 @@
 import sys
+import os
 
 from kivy.app import App
 from kivy.core.text import LabelBase
 from kivy.uix.widget import Widget
 from kivy.properties import (
-    NumericProperty, ReferenceListProperty, ObjectProperty
+    NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty
 )
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
 from kivy.uix.label import Label
-import os
 from kivy.utils import platform
 from kivy.uix.switch import Switch
 
 # TODO ostacoli bottone (tipo costo 7/8)
 # TODO On a win,usare delle gif di coriandoli o robe del genere e fare un'animation con direzione e size randomizzate
+# TODO Mettere l'image scaling, metter background diversi e sceglibili, mettere immagini diverse per la ball
 
 
 class PathFinder:
@@ -51,29 +52,50 @@ class PongPaddle(Widget):
     pathfinder = PathFinder()
 
     def bounce_ball(self, ball):
+        if(ball.is_invulnerable):
+            return
         if self.collide_widget(ball):
             vx, vy = ball.velocity
             offset = (ball.center_y - self.center_y) / (self.height / 5)  # sposta la palla di un tot
             bounced = Vector(-1 * vx, vy)  # gira la palla
-            vel = bounced * 1.1   # aumenta la velocità
+            bx, by = bounced
+
+            # If it goes beyond 40 something it glitches throught the wall
+            if(abs(bx) > ball.vmax_x or abs(by) > ball.vmax_y):
+                vel = bounced
+            else:
+                vel = bounced * 1.1   # aumenta la velocità
             ball.velocity = vel.x, vel.y + offset
+
+            # Prevents the ball from hitting the bar a lot of times thus gaining points and velocity iper-quickly
             if(self.bar_value < self.max_power_points):
                 self.bar_value = self.bar_value + 1
-            # Easy fix for the super launchery thing
-            # Make the ball invulnerable to vel changes for a short period of time
+            ball.set_invulnerable(0.2)
 
 
 class PongBall(Widget):
+
+    vmax_x = 38
+    vmax_y = 38
     pathfinder = PathFinder()
+    source = StringProperty(pathfinder.get_path() + '/data/imgs/salvagianni.png')
     velocity_x = NumericProperty(0)
     velocity_y = NumericProperty(0)
     velocity = ReferenceListProperty(velocity_x, velocity_y)
     temp_vx = NumericProperty(0)
     temp_vy = NumericProperty(0)
     temp_vel = (0, 0)
+    is_invulnerable = False
 
     def move(self):
         self.pos = Vector(*self.velocity) + self.pos
+
+    def set_invulnerable(self, time):
+        self.is_invulnerable = True
+        Clock.schedule_once(self.set_vulnerable, time)
+
+    def set_vulnerable(self, stuff):
+        self.is_invulnerable = False
 
     def pause(self):
         self.temp_vx = self.velocity_x
@@ -91,6 +113,11 @@ class PongBall(Widget):
         """if(self.temp_vy == -1 and self.temp_vx == -1):
             self.temp_vx = self.velocity_x
             self.temp_vy = self.velocity_y"""
+        if(self.velocity_x >= self.vmax_x or self.velocity_y >= self.vmax_y):
+            print("it is")
+            return
+        else:
+            print(self.velocity_y, self.velocity_x)
         self.velocity_x = self.velocity_x*2
         self.velocity_y = self.velocity_y*2
         self.move()
@@ -167,13 +194,14 @@ class LabelChanging(Label):
 
 
 class PongGame(Widget):
+
     ball = ObjectProperty(None)
     player1 = ObjectProperty(None)
     player2 = ObjectProperty(None)
     pause = False
     pathfinder = PathFinder()
     path = pathfinder.get_path()
-
+    bgm_clock = None
     burst_cost = 5
     freeze_cost = 6
     music = True
@@ -183,22 +211,74 @@ class PongGame(Widget):
     seffects = True
     music_volume = 0.1
     sound_volume = 1
+    bgm = "HappyHappy"
+    bgms = {
+        "HappyHappy": SoundLoader.load(path + '/data/sounds/happyhappy.wav'),
+        "Burpish": SoundLoader.load(path + '/data/sounds/burpish.wav'),
+        "Burpish_nopiano": SoundLoader.load(path + '/data/sounds/burpish_nopiano.wav'),
+        "Scegli Musica": SoundLoader.load(path + '/data/sounds/happyhappy.wav'),
+        "Altro": SoundLoader.load(path + '/data/sounds/happyhappy.wav')
+    }
     sounds = {"rup": SoundLoader.load(path+'/data/sounds/rup.wav'),
               "punto": SoundLoader.load(path+'/data/sounds/punto.wav'),
               "burst": SoundLoader.load(path+'/data/sounds/burst.wav'),
-              "bgm": SoundLoader.load(path + '/data/sounds/background.wav'),
-              "winner": SoundLoader.load(path + '/data/sounds/winner.wav')}
+              "bgm": bgms[bgm],
+              "winner": SoundLoader.load(path + '/data/sounds/winner.wav'),
+              "gl": SoundLoader.load(path + '/data/sounds/gl.wav'),
+              "bump": SoundLoader.load(path + '/data/sounds/bump.wav')}
+    ball_icons = {
+        "Icona Palla": pathfinder.get_path() + "/data/imgs/salvagianni.png",
+        "Salvagianni": pathfinder.get_path() + "/data/imgs/salvagianni.png",
+        "Ingranaggio": pathfinder.get_path() + "/data/imgs/gear.png",
+        "Bursted": pathfinder.get_path() + "/data/imgs/burstr.png",
+        "Freezed": pathfinder.get_path() + "/data/imgs/freezer.png",
+        "Tondino": pathfinder.get_path() + "/data/imgs/tondino.png",
+        #"Barry": pathfinder.get_path() + "/data/imgs/barry.jpg",
+        "Luna": pathfinder.get_path() + "/data/imgs/moon.png"
+    }
+    backgrounds = {
+        "Sfondo": pathfinder.get_path() + "/data/imgs/balck.png",
+        "Default": pathfinder.get_path() + "/data/imgs/nero.png",
+        "Galassia": pathfinder.get_path() + "/data/imgs/galaxy.jpg",
+        "Electric": pathfinder.get_path() + "/data/imgs/electronic.jpg",
+        "PacMan": pathfinder.get_path() + "/data/imgs/pacman.jpg",
+        "Monti": pathfinder.get_path() + "/data/imgs/monti.jpg",
+        "Alpi": pathfinder.get_path() + "/data/imgs/alpi.jpg",
+        "Prato": pathfinder.get_path() + "/data/imgs/medow.jpg",
+        "Prato Alpino": pathfinder.get_path() + "/data/imgs/alpi-medow.jpg",
+        "Foresta": pathfinder.get_path() + "/data/imgs/forest.jpg",
+        "Lago": pathfinder.get_path() + "/data/imgs/lake.jpg",
+        "Gradiente": pathfinder.get_path() + "/data/imgs/gradient.jpg"
+    }
+    fonts = {
+        "WIP": "Work in progress",
+        "Work": "in progress"
 
+    }
     # Mettere il max power points nelle opzioni TODO
     def menu(self):
         Clock.schedule_once(self.backgroundplay, 1)
-        Clock.schedule_interval(self.backgroundplay, 33.8) # DEVE stare DOPO il primo coso che la fa partire
-        
+        self.bgm_clock = Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+5)  # DEVE stare DOPO il primo coso che la fa partire
+
+    def load_sounds(self):
+        print("Loading sounds")
+        for i in self.sounds:
+            self.play_sound(self.sounds[i], 0)
+            self.stop_sound(self.sounds[i])
+        for i in self.bgms:
+            self.play_sound(self.bgms[i], 0)
+            self.stop_sound(self.bgms[i])
+        print("Loaded!")
+
+    def change_clock(self):
+        self.bgm_clock.cancel()
+        self.bgm_clock = Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length + 2.5)
+        print(self.bgms[self.bgm].length + 3.5)
+
     def burst_ballSX(self):
         if(self.player1.bar_value >= self.burst_cost):
             self.ball.burst()
             self.play_sound(self.sounds["burst"], self.sound_volume)
-            print("should be playing the sound?")
             self.player1.bar_value = self.player1.bar_value - self.burst_cost
         else:
             print("non abbastanza punti")
@@ -239,6 +319,15 @@ class PongGame(Widget):
             print("Sound is %.3f seconds" % sound.length)
             sound.volume = volume
             sound.play()
+            return
+
+    def stop_sound(self, sound):
+        if sound and self.seffects:
+            print("Sound found at %s" % sound.source)
+            print("Sound is %.3f seconds" % sound.length)
+            sound.stop()
+            print("stopped sound")
+            return
 
     def backgroundplay(self, something):
         if(self.music is False):
@@ -248,20 +337,18 @@ class PongGame(Widget):
             print("Sound is %.3f seconds" % self.sounds["bgm"].length)
             self.sounds["bgm"].volume = self.music_volume
             self.sounds["bgm"].play()
-        print("restarted song")
 
     def backgroundstop(self, something):
 
-        if self.sounds["bgm"]:
-            print("Sound found at %s" % self.sounds["bgm"].source)
-            print("Sound is %.3f seconds" % self.sounds["bgm"].length)
-            self.sounds["bgm"].volume = self.music_volume
-            self.sounds["bgm"].stop()
-            print("stopped song")
+        for i in self.bgms:
+            self.play_sound(self.bgms[i], 0)
+            self.stop_sound(self.bgms[i])
 
     slider_temp_music = 0.1
     slider_temp_sound = 1
     check_slider = False
+    check_bgm = False
+    spinner_old_value = "Scegli Musica"
 
     def update_sliders(self):
         # Dovrebbe in teroia controllare una volta si e una no, e dovrebbe poter quindi usare il valore vecchio
@@ -271,10 +358,12 @@ class PongGame(Widget):
             self.check_slider = False
         else:
             self.check_slider = True
+
         if (self.music and self.slider_temp_music != self.ids.music_slider.value):
             self.music_volume = self.ids.music_slider.value / 100
-            self.backgroundstop("hi")
-            self.backgroundplay("hi1")
+            """self.backgroundstop("hi")
+            self.backgroundplay("hi1")"""
+            self.sounds["bgm"].volume = self.music_volume
         if (self.seffects and self.slider_temp_sound != self.ids.sound_slider.value):
             self.sound_volume = self.ids.sound_slider.value / 100
             self.play_sound(self.sounds["burst"], self.ids.sound_slider.value / 100)
@@ -447,6 +536,7 @@ class PongApp(App):
     def build(self):
         self.load_fonts()
         game = PongGame()
+        game.load_sounds()
         game.menu()
         Clock.schedule_interval(game.update, 1.0 / 60.0)
         return game
