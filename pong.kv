@@ -100,11 +100,12 @@
                 text: 'Scegli Musica'
                 values: 'HappyHappy', 'Burpish', 'Burpish_nopiano'
                 on_text:
-                    print("hi")
+                    root.bgm_prec = root.bgm
                     root.bgm = self.text
                     root.sounds["bgm"] = root.bgms[root.bgm]
                     root.backgroundstop("hi")
                     root.change_clock()
+                    print("changed")
                     root.backgroundplay("hi1")
 
 
@@ -172,7 +173,7 @@
                 size_hint_y: None
                 height: 44
                 text: 'Sfondo'
-                values: "Default", "Galassia", "Electric", "PacMan", "Monti", "Apli", "Prato", "Prato Alpino", "Foresta", "Lago", "Gradiente"
+                values: "Default", "Galassia", "Electric", "PacMan", "Monti", "Alpi", "Prato", "Prato Alpino", "Foresta", "Lago", "Gradiente"
                 on_text:
                     root.source = root.backgrounds[self.text]
 

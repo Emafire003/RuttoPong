@@ -201,7 +201,6 @@ class PongGame(Widget):
     pause = False
     pathfinder = PathFinder()
     path = pathfinder.get_path()
-    bgm_clock = None
     burst_cost = 5
     freeze_cost = 6
     music = True
@@ -212,6 +211,7 @@ class PongGame(Widget):
     music_volume = 0.1
     sound_volume = 1
     bgm = "HappyHappy"
+    bgm_prec = "HappyHappy"
     bgms = {
         "HappyHappy": SoundLoader.load(path + '/data/sounds/happyhappy.wav'),
         "Burpish": SoundLoader.load(path + '/data/sounds/burpish.wav'),
@@ -237,15 +237,15 @@ class PongGame(Widget):
         "Luna": pathfinder.get_path() + "/data/imgs/moon.png"
     }
     backgrounds = {
-        "Sfondo": pathfinder.get_path() + "/data/imgs/balck.png",
-        "Default": pathfinder.get_path() + "/data/imgs/nero.png",
+        "Sfondo": pathfinder.get_path() + "/data/imgs/black.png",
+        "Default": pathfinder.get_path() + "/data/imgs/black.png",
         "Galassia": pathfinder.get_path() + "/data/imgs/galaxy.jpg",
         "Electric": pathfinder.get_path() + "/data/imgs/electronic.jpg",
         "PacMan": pathfinder.get_path() + "/data/imgs/pacman.jpg",
         "Monti": pathfinder.get_path() + "/data/imgs/monti.jpg",
         "Alpi": pathfinder.get_path() + "/data/imgs/alpi.jpg",
         "Prato": pathfinder.get_path() + "/data/imgs/medow.jpg",
-        "Prato Alpino": pathfinder.get_path() + "/data/imgs/alpi-medow.jpg",
+        "Prato Alpino": pathfinder.get_path() + "/data/imgs/alpi_medow.jpg",
         "Foresta": pathfinder.get_path() + "/data/imgs/forest.jpg",
         "Lago": pathfinder.get_path() + "/data/imgs/lake.jpg",
         "Gradiente": pathfinder.get_path() + "/data/imgs/gradient.jpg"
@@ -258,7 +258,7 @@ class PongGame(Widget):
     # Mettere il max power points nelle opzioni TODO
     def menu(self):
         Clock.schedule_once(self.backgroundplay, 1)
-        self.bgm_clock = Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+5)  # DEVE stare DOPO il primo coso che la fa partire
+        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+5)  # DEVE stare DOPO il primo coso che la fa partire
 
     def load_sounds(self):
         print("Loading sounds")
@@ -271,9 +271,11 @@ class PongGame(Widget):
         print("Loaded!")
 
     def change_clock(self):
-        self.bgm_clock.cancel()
-        self.bgm_clock = Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length + 2.5)
+        print("unscheduling")
+        Clock.unschedule(self.backgroundplay)
+        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length + 2.5)
         print(self.bgms[self.bgm].length + 3.5)
+        print("done")
 
     def burst_ballSX(self):
         if(self.player1.bar_value >= self.burst_cost):
@@ -338,11 +340,8 @@ class PongGame(Widget):
             self.sounds["bgm"].volume = self.music_volume
             self.sounds["bgm"].play()
 
-    def backgroundstop(self, something):
-
-        for i in self.bgms:
-            self.play_sound(self.bgms[i], 0)
-            self.stop_sound(self.bgms[i])
+    def backgroundstop(self, *args):
+        self.stop_sound(self.bgms[self.bgm_prec])
 
     slider_temp_music = 0.1
     slider_temp_sound = 1
