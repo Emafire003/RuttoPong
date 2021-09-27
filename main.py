@@ -258,7 +258,7 @@ class PongGame(Widget):
     # Mettere il max power points nelle opzioni TODO
     def menu(self):
         Clock.schedule_once(self.backgroundplay, 1)
-        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+5)  # DEVE stare DOPO il primo coso che la fa partire
+        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+2) # DEVE stare DOPO il primo coso che la fa partire
 
     def load_sounds(self):
         print("Loading sounds")
@@ -360,8 +360,6 @@ class PongGame(Widget):
 
         if (self.music and self.slider_temp_music != self.ids.music_slider.value):
             self.music_volume = self.ids.music_slider.value / 100
-            """self.backgroundstop("hi")
-            self.backgroundplay("hi1")"""
             self.sounds["bgm"].volume = self.music_volume
         if (self.seffects and self.slider_temp_sound != self.ids.sound_slider.value):
             self.sound_volume = self.ids.sound_slider.value / 100
@@ -371,11 +369,11 @@ class PongGame(Widget):
     def update_inputs(self):
 
         # Controlla l'input del dropdown menu per i punti power e vittoria
-        if(self.ids.winat_input.text.isdigit()):
+        if(self.ids.winat_input.text.isdigit() and int(self.ids.winat_input.text) != 0):
             self.winat = int(self.ids.winat_input.text)
         else:
-            self.ids.error_label1.text = "Error! Must be only numbers!"
-            self.ids.error_label2.text = "Errore! Devono essere solo numeri!"
+            self.ids.error_label1.text = "Error! Must be only numbers and not 0!"
+            self.ids.error_label2.text = "Errore! Devono essere solo numeri e non 0!"
             self.ids.error_popup.open()
 
         # TODO restart function
@@ -437,6 +435,15 @@ class PongGame(Widget):
         self.ball.velocity = vel
         print("Serving Ball")
 
+    def reset(self):
+        # Resetting the game
+        print("Resetting")
+        self.player1.score = 0
+        self.player2.score = 0
+        self.add_widget(self.ids.avvio)
+        self.player1.center_y = self.center_y
+        self.player2.center_y = self.center_y
+
     # Main method della classe, aggiorna ogni 60esimo di secondo il gioco. fa muovere la palla ecc
     def update(self, dt):
         # Updating volumes according to sliders
@@ -456,10 +463,7 @@ class PongGame(Widget):
                     self.ids.winner_label.text = "Vince il giocatore 1!!!"
                     self.ids.winner_popup.open()
 
-                    # Resetting the game
-                    self.player1.score = 0
-                    self.player2.score = 0
-                    self.add_widget(self.ids.avvio)
+                    self.reset()
                 if (self.player2.score >= self.winat):
                     # Stopping bal
                     self.serve_ball(vel=(0, 0))
@@ -470,10 +474,7 @@ class PongGame(Widget):
                     self.ids.winner_popup.open()
                     self.play_sound(self.sounds["winner"], self.sound_volume)
 
-                    # Resetting the game
-                    self.player1.score = 0
-                    self.player2.score = 0
-                    self.add_widget(self.ids.avvio)
+                    self.reset()
 
             self.ball.move()
 
