@@ -7,6 +7,8 @@ from kivy.uix.widget import Widget
 from kivy.properties import (
     NumericProperty, ReferenceListProperty, ObjectProperty, StringProperty, DictProperty
 )
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.uix.image import Image
 from kivy.vector import Vector
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
@@ -16,7 +18,7 @@ from kivy.uix.switch import Switch
 
 # TODO ostacoli bottone (tipo costo 7/8)
 # TODO On a win,usare delle gif di coriandoli o robe del genere e fare un'animation con direzione e size randomizzate
-# TODO Mettere l'image scaling, metter background diversi e sceglibili, mettere immagini diverse per la ball
+# TODO Mettere l'image scaling
 
 
 class PathFinder:
@@ -145,6 +147,22 @@ class PongBall(Widget):
         self.temp_vx = -1
 
 
+class ButtonImg(ButtonBehavior, Image):
+    ol_x = 0
+    ol_y = 0
+    max_x_r = 0
+    max_y_r = 0
+    ol_c = 0
+
+    def change_size(self, new_size):
+        self.ol_x, self.ol_y = self.center
+        self.size = new_size
+        self.center = (self.ol_x,self.ol_y)
+
+    # TODO Mettere le regex per togliere l'estensione per poi aggiungere una "r" in fondo al source in modo da poterlo cambiare
+    def change_soruce(self):
+        l = 0
+
 class LabelChanging(Label):
     color_number = 0
     color_number_max = 0
@@ -248,17 +266,41 @@ class PongGame(Widget):
         "Prato Alpino": pathfinder.get_path() + "/data/imgs/alpi_medow.jpg",
         "Foresta": pathfinder.get_path() + "/data/imgs/forest.jpg",
         "Lago": pathfinder.get_path() + "/data/imgs/lake.jpg",
+        "Caverna": pathfinder.get_path() + "/data/imgs/cave.jpg",
+        "Nuvole": pathfinder.get_path() + "/data/imgs/clouds.jpg",
+        "Albero": pathfinder.get_path() + "/data/imgs/clouds_tree.jpg",
         "Gradiente": pathfinder.get_path() + "/data/imgs/gradient.jpg"
     }
-    fonts = {
-        "WIP": "Work in progress",
-        "Work": "in progress"
+    img_size = {
+        "5": (175,175),
+        "4": (140,140),
+        "3": (105, 105),
+        "2": (70, 70),
+        "1": (52, 52),
+        "0": (35, 35)
 
     }
+    buttons = []
+
     # Mettere il max power points nelle opzioni TODO
     def menu(self):
+        label = Label(text="Caricamento...", font_size=45, center=self.center)
+        self.add_widget(label)
         Clock.schedule_once(self.backgroundplay, 1)
-        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+2) # DEVE stare DOPO il primo coso che la fa partire
+        Clock.schedule_interval(self.backgroundplay, self.bgms[self.bgm].length+5) # DEVE stare DOPO il primo coso che la fa partire
+        #self.buttons = [self.ids.optbutton, self.ids.burst_sx, self.ids.freeze_sx]#, self.ids.burst_sx, self.ids.freeze_sx, self.ids.burst_dx, self.ids.freeze_dx]
+        label.text = "Caricato!"
+        self.remove_widget(label)
+
+        """self.remove_widget(label)
+        self.ids.freeze_dx
+        self.remove_widget(self.ids.freeze_dx)
+        self.ids.freeze_dx.size = (70, 70)
+        self.remove_widget(self.ids.label_freeze_dx)
+        self.ids.freeze_dx.background_normal = self.pathfinder.get_path() + '/data/imgs/freezer_2.png'
+        self.ids.freeze_dx.background_down = self.pathfinder.get_path() + '/data/imgs/freezer_2.png'
+        self.add_widget(self.ids.freeze_dx)
+        self.add_widget(self.ids.label_freeze_dx"""
 
     def load_sounds(self):
         print("Loading sounds")
@@ -350,6 +392,12 @@ class PongGame(Widget):
     spinner_old_value = "Scegli Musica"
 
     def update_sliders(self):
+        
+        """
+        for i in self.buttons:
+            i.change_size((self.ids.button_slider.value, self.ids.button_slider.value))
+
+        self.ids.button_label.text = "Dimensione bottoni: "+str(self.ids.button_slider.value)"""
         # Dovrebbe in teroia controllare una volta si e una no, e dovrebbe poter quindi usare il valore vecchio
         if (self.check_slider):
             self.slider_temp_music = self.ids.music_slider.value

@@ -158,6 +158,18 @@
                 orientation: 'horizontal'
                 value: 1*100
 
+            Label:
+                id: button_label
+                text: "Dimensione bottoni: "+str(root.ids.button_slider.value)
+
+            Slider:
+                id: button_slider
+                min: 10
+                max: 175
+                step: 1
+                orientation: 'horizontal'
+                value: 35
+
 
             Spinner:
                 id: ball_spinner
@@ -284,27 +296,27 @@
         bold: True
 
     #Options button
-    Button:
+    ButtonImg:
         id: optbutton
         center_x: root.width / 2
         center_y: root.height - 50
-        size: 52, 52
-        size_hint: 1,1
-        background_normal: root.pathfinder.get_path() + '/data/imgs/gear_1.png'
-        background_down: root.pathfinder.get_path() + '/data/imgs/gearr_1.png'
+        size: (35, 35)
+        source: root.pathfinder.get_path() + '/data/imgs/gear.png'
         on_press:
+            source: root.pathfinder.get_path() + '/data/imgs/gearr.png'
             self.parent.set_pause()
             opt_popup.open()
+        on_release:
+            source: root.pathfinder.get_path() + '/data/imgs/gear.png'
 
     ##Freeze Button SX
-    Button:
+    ButtonImg:
         id: freeze_sx
         ##center_x: root.width / 8
-        center_x: burst_sx.center_x - 59
-        center_y: points_sx.center_y + 55
+        center_x: burst_sx.center_x - self.width
+        center_y: points_sx.center_y + self.width
         size: 52, 52
-        background_normal: root.pathfinder.get_path() + '/data/imgs/freeze_1.png'
-        background_down: root.pathfinder.get_path() + '/data/imgs/freezer_1.png'
+        source: root.pathfinder.get_path() + '/data/imgs/freeze.png'
         on_press:
             self.parent.freeze_ballSX()
 
@@ -316,7 +328,7 @@
         center_x: freeze_sx.center_x
         center_y: freeze_sx.center_y + 2
         font_name: "Karantina_Regular"
-        font_size: 45
+        font_size: 35
         changing_interval: 0.12
         color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
         color_number_max: 4
@@ -325,11 +337,11 @@
     ##Freeze button DX
     Button:
         id: freeze_dx
-        center_x: burst_dx.center_x + 59
+        center_x: burst_dx.center_x + 49
         center_y: points_dx.center_y - 10
-        size: 52, 52
-        background_normal: root.pathfinder.get_path() + '/data/imgs/freeze_1.png'
-        background_down: root.pathfinder.get_path() + '/data/imgs/freezer_1.png'
+        size: 35, 35
+        background_normal: root.pathfinder.get_path() + '/data/imgs/freeze.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/freezer.png'
         on_press:
             self.parent.freeze_ballDX()
 
@@ -340,20 +352,19 @@
         center_x: freeze_dx.center_x + 1
         center_y: freeze_dx.center_y + 1
         font_name: "Karantina_Regular"
-        font_size: 45
+        font_size: 35
         changing_interval: 0.12
         color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
         color_number_max: 4
         backward_repeat: True
 
     #Burst Button SX
-    Button:
+    ButtonImg:
         id: burst_sx
-        center_x: points_sx.center_x + 110
-        center_y: points_sx.center_y + 55
+        center_x: points_sx.center_x + 109
+        center_y: points_sx.center_y + 48
         size: 52, 52
-        background_normal: root.pathfinder.get_path() + '/data/imgs/burst_1.png'
-        background_down: root.pathfinder.get_path() + '/data/imgs/burstr_1.png'
+        source: root.pathfinder.get_path() + '/data/imgs/burst.png'
         on_press:
             self.parent.burst_ballSX()
 
@@ -364,7 +375,7 @@
         center_x: burst_sx.center_x
         center_y: burst_sx.center_y + 1
         font_name: "Karantina_Regular"
-        font_size: 45
+        font_size: 35
         changing_interval: 0.12
         color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
         color_number_max: 4
@@ -373,12 +384,12 @@
     #Burst Button DX
     Button:
         id: burst_dx
-        center_x: points_dx.center_x - 110
+        center_x: points_dx.center_x - 109
         center_y: points_dx.center_y - 10
-        size: 52, 52
+        size: 35, 35
         size_hint: (0.7,0.7)
-        background_normal: root.pathfinder.get_path() + '/data/imgs/burst_1.png'
-        background_down: root.pathfinder.get_path() + '/data/imgs/burstr_1.png'
+        background_normal: root.pathfinder.get_path() + '/data/imgs/burst.png'
+        background_down: root.pathfinder.get_path() + '/data/imgs/burstr.png'
         on_press:
             self.parent.burst_ballDX()
 
@@ -389,7 +400,7 @@
         center_x: burst_dx.center_x
         center_y: burst_dx.center_y
         font_name: "Karantina_Regular"
-        font_size: 45
+        font_size: 35
         changing_interval: 0.12
         color_list: ["#4e075f", "#6a0a83", "#870ca6","#af0fd7","#ce40f2"]
         color_number_max: 4
@@ -470,7 +481,7 @@
         max: 10
         size_hint: 1,1
         center_x: points_sx.center_x + 80
-        center_y: burst_sx.center_y - 35
+        center_y: burst_sx.center_y - 30
         max_power_points: 10
 
     ProgressBar:
@@ -480,5 +491,6 @@
         max: 10
         size_hint: 1,1
         center_x: points_dx.center_x - 80
-        center_y: burst_dx.center_y + 35
+        center_y: burst_dx.center_y + 30
         max_power_points: 10
+

@@ -114,3 +114,6 @@ dmypy.json
 
 #PyCharm
 .idea/
+
+#ProjectStuff
+./data/stuff
